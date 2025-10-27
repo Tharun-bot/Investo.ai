@@ -1,0 +1,11 @@
+Django
+djangorestframework
+django-cors-headers
+yfinance
+pandas
+numpy
+scikit-learn
+python-dotenv
+celery
+redis
+requests
