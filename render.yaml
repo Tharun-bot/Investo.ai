@@ -1,0 +1,51 @@
+# Investo.ai/render.yaml
+databases:
+  - name: investo-db
+    databaseName: investo
+    user: investo_user
+    plan: free # or starter
+
+services:
+  # Backend Service
+  - type: web
+    name: investo-backend
+    runtime: docker
+    dockerFilePath: ./Dockerfile.backend
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: investo-db
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: investo-redis
+          property: connectionString
+      - key: FRONTEND_URL
+        # We will update this with the actual frontend URL after deployment creation
+        # or use a placeholder for now.
+        value: https://investo-frontend.onrender.com 
+
+  # Frontend Service
+  - type: web
+    name: investo-frontend
+    runtime: docker
+    dockerFilePath: ./Dockerfile.frontend
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: investo-backend
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # Redis for Celery
+  - type: redis
+    name: investo-redis
+    region: oregon # Ensure this matches your other services
+    plan: free # Instance type
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # Allow all internal connections
